@@ -9,7 +9,7 @@ go-server:
 go-agent:
 	docker build $(BUILD_OPTS) -f Dockerfile.gocd-agent -t platformr/gocd-agent .
 
-certificates:
+key:
 	ssh-keygen -b 4096 -t rsa -N '' -f ssh/id_rsa
 
 @phony: all
