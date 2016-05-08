@@ -1,0 +1,12 @@
+version: '2'
+services:
+  go-server:
+    image: platformr/gocd-server
+    ports:
+     - "8153:8153"
+  go-agent:
+    image: platformr/gocd-agent
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+     - go-server
