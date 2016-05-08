@@ -1,0 +1,3 @@
+[submodule "gocd-docker"]
+	path = gocd-docker
+	url = https://github.com/gocd/gocd-docker.git
