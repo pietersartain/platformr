@@ -25,18 +25,51 @@ On your Linux host (Debian, Ubuntu, et al), perform the following:
 
 Now it's up to you.
 
-To test the build process:
+### Testing the build process
+
+This test runs `docker ps` as a proof that docker can be run inside the agent container.
 
 1. Configure a pipeline with appropriate materials
 2. Pass in the appropriate argument into the build stage. Usually something like: `docker build -t build_test .`
 
-To test the upload process:
+Checking the host docker with `docker images` should show that something called build_test has been built. Additionally, checking the Go.CD console should clearly show the command has been executed successfully.
 
-1. 
+### Testing the upload to the container registry
 
-To test the deployment process:
+This test uses the `google/cloud-sdk` and [`geertjohan/google-cloud-sdk-with-docker`](https://hub.docker.com/r/geertjohan/google-cloud-sdk-with-docker/) containers to demonstrates how to use containers as static applications (to avoid having to build the cloud-sdk into the gocd-agent) to deploy a `nginx` container to Google's Container Registry.
 
-1. 
+1. Pull a container to try and run, like `docker pull nginx`
+2. Configure the gcloud container ([the instructions](https://hub.docker.com/r/google/cloud-sdk/)):
+    `docker run -t -i --name gcloud-config google/cloud-sdk gcloud init`
+3. Add a new pipeline which does the following two jobs:
+
+```
+    docker run --rm -ti 
+    --volumes-from gcloud-config
+    -v /var/run/docker.sock:/var/run/docker.sock
+    geertjohan/google-cloud-sdk-with-docker 
+    gcloud docker tag #{IMAGE_NAME} gcr.io/#{GOOGLE_PROJECT_ID}/#{IMAGE_NAME}
+```
+```
+    docker run --rm -ti
+    --volumes-from gcloud-config
+    -v /var/run/docker.sock:/var/run/docker.sock 
+    geertjohan/google-cloud-sdk-with-docker 
+    gcloud docker push gcr.io/#{GOOGLE_PROJECT_ID}/#{IMAGE_NAME}
+```
+
+On the [Google Cloud Platform dashboard](https://console.cloud.google.com) you should be able to go to Container Engine -> Container Registry to see the image has been successfully pushed.
+
+It would be wise to use Go.CDs "Parameters" section for the <google_project_id>, and the <image_name>
+
+### Testing live deployment to kubernetes
+
+This test takes the `nginx` container above.
+
+1. Assume k8s is configured with a Deployment strategy
+
+### Testing updating k8s
+
 
 # Project Aims
 
@@ -75,6 +108,9 @@ Like the idea of using Platformr, but need to work around an annoying process in
     * Tech investigations
  * Get a full Kubernetes stack running
  * Investigate DC/OS baremetal stack.
+
+# License & Copyright
+The code is Copyright 2016 Pieter Sartain, and released under the MIT license. See license.txt for details.
 
 # Random scratch notes.
 
