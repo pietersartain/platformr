@@ -4,7 +4,7 @@ The future of the web is API-based, with many different clients connecting to a 
 
 As a developer, if you're lucky, that central system is nothing more than a web app and a database server. In this case, cloud providers have you covered, and have some neat tools to [allow you to just write your business code, and ignore the servers and storage](http://docs.aws.amazon.com/lambda/latest/dg/welcome.html).
 
-For the rest of us, who need some more custom work, we have to dig a little and recreate some of the wonderful integrated solutions that others have provided. Since containers represent a middleground between the flexibility of managing servers and VMs, without the overheading of having to worry so much about tin, and there are a growing number of container-operating-systems, it's not a giant leap to expect larger backend systems to be microservice and container shaped, going forward.
+For the rest of us, who need some more custom work, we have to dig a little and recreate some of the wonderful integrated solutions that others have provided. Since containers represent a middleground between the flexibility of managing servers and VMs, without the overheading of having to worry so much about tin. With a growing number of container-operating-systems, it's not a giant leap to expect larger backend systems to be microservice and container shaped, going forward.
 
 So wouldn't it be nice if you could take the next logical step and deploy an entire container-based workflow in one click?
 
@@ -40,7 +40,7 @@ This test uses the `google/cloud-sdk` and [`geertjohan/google-cloud-sdk-with-doc
 
 1. Pull a container to try and run, like `docker pull nginx`
 2. Configure the gcloud container ([the instructions](https://hub.docker.com/r/google/cloud-sdk/)):
-    `docker run -t -i --name gcloud-config google/cloud-sdk gcloud init`
+    `docker run -ti --name gcloud-config google/cloud-sdk gcloud init`
 3. Add a new pipeline which does the following two jobs:
 
 ```
@@ -62,14 +62,35 @@ On the [Google Cloud Platform dashboard](https://console.cloud.google.com) you s
 
 It would be wise to use Go.CDs "Parameters" section for the <google_project_id>, and the <image_name>
 
+### Testing talking to k8s
+
+*This lot needs another look. Should be no need to do this interactively. Some cunning usages of --server/--username/--certificate-authority on the docker run ... kubectl ... command line should sort it right out.*
+ 
+Start an interactive container to configure and run kubectl in:
+
+```
+    docker run -ti --rm 
+    -v /var/run/docker.sock:/var/run/docker.sock 
+    --volumes-from gcloud-config 
+    geertjohan/google-cloud-sdk-with-docker 
+    /bin/bash
+```
+
+Then setup and configure kubectl (assuming the cluster is already created):
+
+`gcloud container clusters get-credentials cluster-1 -z europe-west1-b`
+
+Now spin up a new thing:
+
+`kubectl run #{IMAGE_NAME} --image=gcr.io/#{GOOGLE_PROJECT_ID}/#{IMAGE_NAME}`
+
+
 ### Testing live deployment to kubernetes
 
-This test takes the `nginx` container above.
+This test takes the `nginx` container above, and triggers a rolling update.
 
-1. Assume k8s is configured with a Deployment strategy
-
-### Testing updating k8s
-
+1. k8s must be configured with a Deployment strategy for nginx first.
+2. Add a new manual pipeline stage
 
 # Project Aims
 
